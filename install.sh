@@ -84,7 +84,7 @@ main() {
     echo "If the 'autopath' command isn't found in a new shell, add pip's"
     echo "user bin directory to PATH. Find it with:"
     echo "  $PY -m site --user-base"
-    echo "then add "$(that path)/bin" to your PATH."
+    echo "then add \"$($PY -m site --user-base)/bin\" to your PATH."
     echo
     echo "Try it:"
     echo "  autopath sanitize 'Galaxy S25 Ultra!!'"
