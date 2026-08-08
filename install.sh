@@ -17,7 +17,7 @@
 
 set -eu
 
-REPO_URL="${AUTOPATH_REPO_URL:-https://github.com/CHANGE_ME/autopath/archive/refs/heads/main.tar.gz}"
+REPO_URL="${AUTOPATH_REPO_URL:-https://github.com/NRAEnterprises/autopath-package/archive/refs/heads/main.tar.gz}"
 
 have_cmd() {
     command -v "$1" >/dev/null 2>&1
@@ -84,7 +84,7 @@ main() {
     echo "If the 'autopath' command isn't found in a new shell, add pip's"
     echo "user bin directory to PATH. Find it with:"
     echo "  $PY -m site --user-base"
-    echo "then add \"\$(that path)/bin\" to your PATH."
+    echo "then add "$(that path)/bin" to your PATH."
     echo
     echo "Try it:"
     echo "  autopath sanitize 'Galaxy S25 Ultra!!'"
