@@ -10,10 +10,10 @@
 # CPython builds available.
 #
 # Usage:
-#   curl -LsSf https://raw.githubusercontent.com/<YOUR_GH_USER>/autopath/main/install.sh | sh
+#   curl -LsSf https://raw.githubusercontent.com/NRAEnterprises/autopath-package/main/install.sh | sh
 #
 # Override the source if needed:
-#   AUTOPATH_REPO_URL=https://github.com/<user>/autopath/archive/refs/heads/main.tar.gz sh install.sh
+#   AUTOPATH_REPO_URL=https://github.com/<user>/autopath-package/archive/refs/heads/main.tar.gz sh install.sh
 
 set -eu
 
