@@ -13,7 +13,7 @@
 #   curl -LsSf https://raw.githubusercontent.com/NRAEnterprises/autopath-package/main/install.sh | sh
 #
 # Override the source if needed:
-#   AUTOPATH_REPO_URL=https://github.com/<user>/autopath-package/archive/refs/heads/main.tar.gz sh install.sh
+#   AUTOPATH_REPO_URL=https://github.com/<user>/autopath/archive/refs/heads/main.tar.gz sh install.sh
 
 set -eu
 
@@ -84,10 +84,10 @@ main() {
     echo "If the 'autopath' command isn't found in a new shell, add pip's"
     echo "user bin directory to PATH. Find it with:"
     echo "  $PY -m site --user-base"
-    echo "then add \"$($PY -m site --user-base)/bin\" to your PATH."
+    echo "then add \"\$(that path)/bin\" to your PATH."
     echo
     echo "Try it:"
-    echo "  autopath sanitize 'Galaxy S25 Ultra!!'"
+    echo "  autopath sanitize 'Widget Pro 9000!!'"
 }
 
 main "$@"

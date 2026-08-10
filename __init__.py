@@ -108,8 +108,8 @@ def ensure_path_chain(root: str | Path, *segments: str) -> Path:
     exists and is writable in one call.
 
         ensure_path_chain("/home/Documents/persist_logs",
-                           "samsung", "Galaxy", "S25 Ultra")
-        -> creates/verifies .../samsung/Galaxy/S25-Ultra and returns it
+                           "acme", "widget-pro", "unit-1")
+        -> creates/verifies .../acme/widget-pro/unit-1 and returns it
     """
     path = Path(root).expanduser()
     for segment in segments:
@@ -155,7 +155,7 @@ def resolve_unique_path(directory: str | Path, desired_name: str,
     writing named files into an auto-organized tree: NEVER clobber,
     ALWAYS auto-correct the name instead.
 
-        resolve_unique_path("/archive/samsung/Galaxy/S25-Ultra", "unit-1")
+        resolve_unique_path("/archive/acme/widget-pro", "unit-1")
         -> .../unit-1.json                         (if free)
         -> .../unit-1-2.json                        (if unit-1.json exists)
         -> .../unit-1-3.json                        (if -2 also exists)
@@ -255,6 +255,87 @@ def ensure_under_alias(alias: str, *segments: str) -> Path:
             f"`autopath register {alias} <path>`"
         )
     return ensure_path_chain(base, *segments)
+
+
+_MIGRATIONS_LOG_PATH = _REGISTRY_DIR / "migrations.log"
+
+
+def _log_migration(entry: str) -> None:
+    ensure_path(_REGISTRY_DIR)
+    timestamp = datetime.now().isoformat()
+    with _MIGRATIONS_LOG_PATH.open("a") as f:
+        f.write(f"{timestamp}\t{entry}\n")
+
+
+def rebase_path(alias: str, new_path: str | Path, copy: bool = False,
+                 dry_run: bool = False) -> dict:
+    """
+    Moves everything already organized under a registered alias's OLD
+    location to a NEW location, then repoints the alias — for when the
+    underlying storage moved (new device, new mount point, a storage
+    path that changed) but the folder structure you built under that
+    alias should carry over intact rather than starting over.
+
+    This is the alias system doing the work a "device profile" would
+    otherwise need vendor/model-specific knowledge to do: since
+    everything was already organized under an alias rather than a
+    literal path, moving it is just "point the alias somewhere else and
+    bring the contents along" — no awareness of what device or vendor
+    either location belongs to is required.
+
+    Every file that would collide with something already at the new
+    location is renamed via resolve_unique_path rather than overwritten.
+    dry_run=True previews the full set of moves without touching
+    anything or updating the registry. Every real (non-dry-run) rebase
+    is appended to ~/.config/autopath/migrations.log for an audit trail.
+
+    Raises KeyError if the alias was never registered.
+    """
+    old_path = resolve_alias(alias)
+    if old_path is None:
+        raise KeyError(
+            f"no registered path for alias '{alias}' — nothing to rebase. "
+            f"Register it first with `autopath register {alias} <path>`"
+        )
+
+    new_path = Path(new_path).expanduser()
+    moves = []
+
+    if old_path.exists():
+        for item in sorted(old_path.rglob("*")):
+            if not item.is_file():
+                continue
+            rel = item.relative_to(old_path)
+            target_dir = new_path / rel.parent
+            if not dry_run:
+                ensure_path(target_dir)
+            target = resolve_unique_path(target_dir, item.stem, extension=item.suffix) \
+                if not dry_run else (target_dir / item.name)
+            moves.append({"from": str(item), "to": str(target)})
+            if not dry_run:
+                if copy:
+                    shutil.copy2(item, target)
+                else:
+                    shutil.move(str(item), str(target))
+
+    if not dry_run:
+        ensure_path(new_path)
+        registry = _load_registry()
+        registry[sanitize_component(alias)] = str(new_path)
+        _save_registry(registry)
+        _log_migration(
+            f"rebase alias={alias} from={old_path} to={new_path} "
+            f"files_moved={len(moves)} mode={'copy' if copy else 'move'}"
+        )
+
+    return {
+        "alias": alias,
+        "from": str(old_path),
+        "to": str(new_path),
+        "moved": moves,
+        "mode": "copy" if copy else "move",
+        "dry_run": dry_run,
+    }
 
 
 # =======================================================================

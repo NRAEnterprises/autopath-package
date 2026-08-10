@@ -14,14 +14,14 @@ adopt it independently.
 ## Install
 
 ```sh
-curl -LsSf https://raw.githubusercontent.com/NRAEnterprises/autopath/main/install.sh | sh
+curl -LsSf https://raw.githubusercontent.com/NRAEnterprises/autopath-package/main/install.sh | sh
 ```
 
 Or manually:
 
 ```sh
-git clone https://github.com/NRAEnterprises/autopath.git
-pip install --user ./autopath
+git clone https://github.com/NRAEnterprises/autopath-package.git
+pip install --user ./autopath-package
 ```
 
 If the `autopath` command isn't found afterward, add pip's user bin
@@ -55,15 +55,15 @@ autopath chain <root> <segment> [<segment> ...]
 ```
 Builds and ensures a nested path in one call:
 ```sh
-autopath chain /home/Documents/persist_logs samsung Galaxy "S25 Ultra"
-# -> /home/Documents/persist_logs/samsung/Galaxy/S25-Ultra
+autopath chain /home/Documents/archive acme widget-pro "unit 1"
+# -> /home/Documents/archive/acme/widget-pro/unit-1
 ```
 
 ### Sanitization and unique naming
 
 ```sh
-autopath sanitize "Galaxy S25 Ultra!!"
-# -> Galaxy-S25-Ultra
+autopath sanitize "Widget Pro 9000!!"
+# -> Widget-Pro-9000
 ```
 
 ```sh
@@ -84,6 +84,29 @@ autopath list-paths
 autopath under downloads vibe-coding project-x
 # -> ensures and prints ~/Downloads/vibe-coding/project-x
 ```
+
+### Rebasing a registered alias
+
+When the underlying storage location changes — a new device, a new mount
+point, a storage path that moved — everything already organized under an
+alias can move with it in one call, instead of starting the folder
+structure over:
+
+```sh
+autopath rebase downloads ~/new-storage-location/Downloads --dry-run
+autopath rebase downloads ~/new-storage-location/Downloads
+```
+
+Previews with `--dry-run` first; the real run moves every file (preserving
+the nested structure underneath), auto-renames on any collision with
+something already at the destination (never overwrites), repoints the
+alias, and appends an entry to `~/.config/autopath/migrations.log` for an
+audit trail. `--copy` leaves the old location intact instead of moving.
+
+This is deliberately alias-based rather than device/vendor-aware — the
+alias already hides whatever device-specific detail matters, so rebasing
+it doesn't need to know what a "Galaxy" or a "Pixel" is to work correctly
+for either one.
 
 ### File discovery
 

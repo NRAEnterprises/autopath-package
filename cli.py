@@ -15,7 +15,7 @@ import argparse
 
 from . import (
     ensure_path, ensure_path_chain, sanitize_component, resolve_unique_path,
-    register_path, resolve_alias, list_registered_paths, ensure_under_alias,
+    register_path, resolve_alias, list_registered_paths, ensure_under_alias, rebase_path,
     identify_file, discover_file_info, collect_matches, DownloadWatcher,
 )
 
@@ -54,6 +54,15 @@ def main(argv: list[str] | None = None) -> int:
     p_under = sub.add_parser("under", help="Build and ensure a nested path under a REGISTERED alias.")
     p_under.add_argument("alias")
     p_under.add_argument("segments", nargs="+")
+
+    p_rebase = sub.add_parser(
+        "rebase",
+        help="Move everything under a registered alias's old location to a new one, and repoint the alias.",
+    )
+    p_rebase.add_argument("alias")
+    p_rebase.add_argument("new_path")
+    p_rebase.add_argument("--copy", action="store_true", help="Copy instead of move (old location left intact).")
+    p_rebase.add_argument("--dry-run", action="store_true", help="Preview the moves without touching anything.")
 
     p_identify = sub.add_parser("identify", help="Show basic provenance (modified time, origin URL if available) for a file.")
     p_identify.add_argument("file")
@@ -115,6 +124,17 @@ def main(argv: list[str] | None = None) -> int:
         except KeyError as e:
             print(str(e), file=sys.stderr)
             return 1
+    elif args.command == "rebase":
+        try:
+            result = rebase_path(args.alias, args.new_path, copy=args.copy, dry_run=args.dry_run)
+        except KeyError as e:
+            print(str(e), file=sys.stderr)
+            return 1
+        label = "DRY RUN — " if result["dry_run"] else ""
+        print(f"{label}{result['mode'].upper()} alias '{result['alias']}': "
+              f"{result['from']} -> {result['to']} ({len(result['moved'])} file(s))")
+        for item in result["moved"]:
+            print(f"  {item['from']}  ->  {item['to']}")
     elif args.command == "identify":
         info = identify_file(args.file)
         print(f"path:       {info['path']}")

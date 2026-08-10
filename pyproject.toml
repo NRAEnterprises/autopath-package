@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "autopath"
 version = "1.0.0"
-description = "Auto-correcting filesytem path creation, sanitization, unique naming, custom patchways, deep file discovery, bulk collection, and live folder watching."
+description = "Auto-correcting filesystem path creation, sanitization, and unique naming — core organizational logic shared across projects."
 requires-python = ">=3.9"
 dependencies = []
 
@@ -14,7 +14,3 @@ autopath = "autopath.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[project.urls]
-"Homepage" = "https://github.com/NRAEnterprises/autopath-package"
-"Repository" = "https://github.com/NRAEnterprises/autopath-package"
